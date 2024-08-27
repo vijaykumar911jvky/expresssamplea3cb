@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-xvtibutbfsckq
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '//**'
+    - '.github/workflows/container-app-xvtibutbfsckq-AutoDeployTrigger-52710e3c-f31c-4048-9f5f-593399717ef2.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPXVTIBUTBFSCKQ_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPXVTIBUTBFSCKQ_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPXVTIBUTBFSCKQ_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: defaultacrcontainerregistryb6e6.azurecr.io
+          registryUsername: ${{ secrets.CONTAINERAPPXVTIBUTBFSCKQ_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPXVTIBUTBFSCKQ_REGISTRY_PASSWORD }}
+          containerAppName: container-app-xvtibutbfsckq
+          resourceGroup: expresssamplea3cbb906
+          imageToBuild: defaultacrcontainerregistryb6e6.azurecr.io/container-app-xvtibutbfsckq:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
